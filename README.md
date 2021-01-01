@@ -1,10 +1,10 @@
 # Solar-AI
 
 ## 폴더 및 파일 섦명
-&#10004; data : train, test, sample_submission 데이터
-&#10004; base_code : baseline 코드 그대로
-&#10004; submission : 제출용 csv 파일들
-
+* data : train, test, sample_submission 데이터
+* base_code : baseline 코드 그대로
+* submission : 제출용 csv 파일들
+---
 - module.py : 데이터 전처리를 위한 함수 포함, 연속된 데이터 개수(cons)와 시간 간격(unit), 제거할 열(removed_column)을 지정함.
 - main.py : module과 LGBM을 활용한 기본 실행 파일
 - deep.py : 저장된 pickle을 불러와 keras.dense 모델을 학습시킴.

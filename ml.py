@@ -2,19 +2,10 @@
 import pandas as pd
 import numpy as np
 import os
-import glob
 import random
 import warnings
 from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
-import seaborn as sns
-# trainCsv = pd.read_csv("./data/train/train.csv")
-# list_zero = trainCsv[trainCsv["DNI"] == 0].index
-# removeZero=  trainCsv.drop(list_zero)
-# shuffled=removeZero.iloc[np.random.permutation(range(500))].reset_index(drop=True)
-# sns.distplot(shuffled["DNI"])
-# sns.regplot(x="WS",y="TARGET", data=shuffled[:500])
-#%%
+
 def loadPreviousDays(data, prevs, cols):
     retCols = cols.copy()
     retData = data.copy()
@@ -30,9 +21,9 @@ def preprocessData(data, prevs=[1], isTrain=True):
     retData = data.copy()
     retData, retCols = loadPreviousDays(data, prevs, ['DHI', 'DNI', 'WS', 'RH', 'T'])
     if isTrain == True:
-        return retData[retCols + ['1DayAfter', '2DayAfter']].dropna()
+        return retData[['Hour'] + retCols + ['1DayAfter', '2DayAfter']].dropna()
     else:
-        return retData[retCols].dropna()
+        return retData[['Hour'] + retCols].dropna()
 
 # LOAD DATA
 trainCsv = pd.read_csv("./data/train/train.csv")
@@ -90,7 +81,7 @@ for i in range(81):
         if(testData.iloc[i*48+j]["DNI"] == 0 and testData.iloc[i*48+j]["DHI"] == 0): 
             submission.iloc[i*48+j, 1:] = 0
             # submission.loc["{0}.csv_Day7_{1}h{2:02d}m".format(i,hour,minute), "q_0.1":] = 0
-submission.to_csv('./subs/WithoutHour.csv', index=False)
+submission.to_csv('./subs/WithHour.csv', index=False)
 print("SCORE MEAN: {0}".format(totalScore/18))
 print("END")
 

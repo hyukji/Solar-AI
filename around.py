@@ -1,61 +1,17 @@
 # %%
+import pandas as pd
+import numpy as np
+
 from sklearn.model_selection import train_test_split
-from module import *
-
-def concat_data(data): # num of consecutive days
-    temp = data.copy()
-    res = data.copy()
-    cols_name = res.columns
-    res.columns = [f'{col}_{0}' for col in cols_name]
-    for ele in [48, 96, 144, 192]:
-        new_ele = temp.shift(-ele, fill_value = np.nan)
-        new_ele.columns = [f'{col}_{ele}' for col in cols_name]
-        res = pd.concat([res, new_ele],axis=1)
-    return res
-
-def preprocess_data(data, consecutive, unit, is_train=True):
-    # 원하는 칼럼 추가는 여기서
-    # ex, temp['GHI'] = temp['DHI'] + temp['DNI']
-    temp = data.copy()
-    removed_cols = ['Day', 'Hour', 'Minute']
-
-    temp = temp.drop(removed_cols, axis='columns')
-    # temp = concat_data(temp, consecutive, unit)
-    temp = concat_data(temp)
-    temp = temp.fillna(method='bfill')
-
-    if is_train:
-        after_days = [1, 2]
-        col = f'TARGET_192'
-
-        temp = add_future_feats(temp, after_days, col)
-        temp = temp.dropna()
-        return temp
-
-    else:
-        temp = get_one_data(temp)
-        return temp
+from module.data import get_train, get_test, save_submission
 
 cons = 2
-unit = 1
+unit = 48
+df_train_x, df_train_y = get_train(cons, unit, save=False)
+X_train_1, X_valid_1, Y_train_1, Y_valid_1 = train_test_split(df_train_x, df_train_y.iloc[:, 0], test_size=0.3, random_state=0)
+X_train_2, X_valid_2, Y_train_2, Y_valid_2 = train_test_split(df_train_x, df_train_y.iloc[:, 1], test_size=0.3, random_state=0)
 
-temp = pd.read_csv('./data/train/train.csv')
-df_train = preprocess_data(temp, cons, unit, is_train=True)
-df_train.to_pickle('./df_train.pkl')
-
-
-X_train_1, X_valid_1, Y_train_1, Y_valid_1 = train_test_split(df_train.iloc[:, :-2], df_train.iloc[:, -2], test_size=0.3, random_state=0)
-X_train_2, X_valid_2, Y_train_2, Y_valid_2 = train_test_split(df_train.iloc[:, :-2], df_train.iloc[:, -1], test_size=0.3, random_state=0)
-
-df_test = []
-
-for i in range(81):
-        file_path = './data/test/' + str(i) + '.csv'
-        temp = pd.read_csv(file_path)
-        temp = preprocess_data(temp, cons, unit, is_train=False)
-        df_test.append(temp)
-
-X_test = pd.concat(df_test)
+X_test = get_test(cons, unit, save=False)
 # %%
 quantiles = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 from lightgbm import LGBMRegressor

@@ -20,9 +20,8 @@ for i, v in enumerate(['winter', 'fall', 'summer']):
     preds = preds.where(preds>=0, pred)
     print(preds)
 
-days = 4
-for day in range(6, 6-days, -1):
-    print(day)
+days = 672
+round(days ** (1/3))
 
 
 

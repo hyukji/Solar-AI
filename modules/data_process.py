@@ -12,7 +12,6 @@ def loadPreviousDays(data, prevs, cols=['TARGET']):
             tag= "{0}after{1}".format(prev,col)
             retData[tag] = retData[col].shift(prev*48, fill_value=np.nan)  
             retCols.append(tag)
-    # retCols.sort()
     return retData, retCols
 
 # 데이터 전처리 함수

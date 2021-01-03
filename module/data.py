@@ -46,7 +46,7 @@ def get_one_data(data):
     # return res
 
 # train과 test의 데이터 전처리
-def preprocess_data(data, consecutive, unit, removed_cols = ['Day', 'Hour', 'Minute'], is_train=True):
+def preprocess_data(data, consecutive, unit, removed_cols, is_train):
     # 원하는 칼럼 추가 및 삭제 가능
     # ex, temp['GHI'] = temp['DHI'] + temp['DNI']
 
@@ -64,33 +64,38 @@ def preprocess_data(data, consecutive, unit, removed_cols = ['Day', 'Hour', 'Min
         return temp
 
     else:
+        # temp = concat_data(temp, 3, -1)
         temp = temp.dropna()
         temp = get_one_data(temp)
         return temp
 
 # train 파일 입출력 및 전처리
-def get_train(consecutive, unit, save=False):
+def get_train(consecutive, unit, removed_cols = ['Day', 'Minute'], save=None):
     temp = pd.read_csv('./data/train/train.csv')
-    df_train = preprocess_data(temp, consecutive, unit, is_train=True)
-    if save:
-        df_train.to_pickle('./df_train.pkl')
+    df_train = preprocess_data(temp, consecutive, unit, removed_cols, is_train=True)
+    if save == 'csv':
+        df_train.to_csv(f'./df_train.csv')
+    elif save == 'pickle':
+        df_train.to_pickle(f'./df_train.pkl')
     
     # X, Y를 분리하여 반환
     return df_train.iloc[:, :-2], df_train.iloc[:, -2:]
 
 # test 파일 입출력 및 전처리
-def get_test(consecutive, unit, save=False):
+def get_test(consecutive, unit, removed_cols = ['Day', 'Minute'], save=None):
     df_test = []
 
     for i in range(81):
         file_path = './data/test/' + str(i) + '.csv'
         temp = pd.read_csv(file_path)
-        temp = preprocess_data(temp, consecutive, unit, is_train=False)
+        temp = preprocess_data(temp, consecutive, unit, removed_cols, is_train=False)
         df_test.append(temp)
 
     X_test = pd.concat(df_test)
-    if save:
-        X_test.to_pickle('./X_test.pkl')
+    if save == 'csv':
+        X_test.to_csv(f'./X_test.csv')
+    elif save == 'pickle':
+        X_test.to_pickle(f'./X_test.pkl')
     return X_test
 
 # sort_index isn't necessary

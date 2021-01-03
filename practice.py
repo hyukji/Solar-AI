@@ -10,6 +10,9 @@
 # 지금은 같은 시각의 데이터로만 다음날을 예측함.
 # -오후 23시의 날씨가 내일 오후3시에 영향을 줄 수도 있음.
 # -feature가 많아지니 딥러닝 쓸 수 있을 듯?
+# 시계열 데이터 rnn 해보자.
+# lr_scheduler
+# KFold validation
 
 import pandas as pd
 import numpy as np

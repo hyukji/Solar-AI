@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Activation
+from tensorflow.keras.layers import Dense, Activation, BatchNormalization, Dropout
 from tensorflow.keras import Input
 import tensorflow.keras.backend as K
 from tensorflow.keras.optimizers import Adam, SGD
@@ -15,17 +15,19 @@ def tilted_loss(q,y,f):
     e = (y-f)
     return K.mean(K.maximum(q*e, (q-1)*e), axis=-1)
 
-def NN(q, dims, X_train, Y_train, X_valid, Y_valid):
+def NN(q, dims, params, X_train, Y_train, X_valid, Y_valid):
 
     # make sequential model
     model = Sequential()
     model.add(Input(shape=(dims[0],)))
     for dim in (dims[1:]):
         model.add(Dense(units=dim, activation='relu'))
+        model.add(BatchNormalization())
+    model.add(Dropout(0.5))
     model.add(Dense(units=1, activation='relu')) # relu means removing minus value
 
     # object for model
-    adam= Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
+    adam= Adam(lr=params['lr'], beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False)
     es= EarlyStopping(monitor='val_loss', mode='min', patience=10)
     mc = ModelCheckpoint('best_model.h5', monitor='val_loss', mode='min', save_best_only=True)
 
@@ -36,11 +38,11 @@ def NN(q, dims, X_train, Y_train, X_valid, Y_valid):
     return model
 
 
-def train_data(dims, X_train, Y_train, X_valid, Y_valid):
+def train_data(dims, params, X_train, Y_train, X_valid, Y_valid):
     lst_models=[]
     for q in quantiles:
         print(q)
-        model = NN(q, dims, X_train, Y_train, X_valid, Y_valid)
+        model = NN(q, dims, params, X_train, Y_train, X_valid, Y_valid)
         lst_models.append(model)
 
     return lst_models

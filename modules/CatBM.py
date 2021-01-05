@@ -6,7 +6,7 @@ quantiles = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
 def CatBM(q, X_train, Y_train, X_valid, Y_valid):  
     model = CatBoostRegressor(
-    iterations= 10000,
+    iterations= 1000,
     learning_rate= 0.027,
     loss_function= f"Quantile:alpha={q}",
     subsample=0.7,

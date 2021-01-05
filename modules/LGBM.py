@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
 from lightgbm import LGBMRegressor
+from sklearn.model_selection import KFold
 
 quantiles = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 lgb_params = {
-    'n_estimators':10000,
-    'learning_rate':0.027,
+    'n_estimators':4000,
+    'learning_rate':0.02,
     'bagging_fraction':0.7,
     'subsample':0.7
 }
@@ -35,3 +36,17 @@ def predict_data(models, X_test):
         predictions = pd.concat([predictions,pred],axis=1)
     predictions.columns = quantiles
     return predictions
+
+def kFold_train_and_predict(origin_X_train, origin_Y_train, X_test):
+    kfold = KFold(n_splits=4,shuffle=True, random_state=0)
+    result = pd.DataFrame()
+    for idx, (train_idx, valid_idx) in enumerate(kfold.split(origin_X_train)):
+        X_train, X_valid = origin_X_train.iloc[train_idx], origin_X_train.iloc[valid_idx]
+        Y_train, Y_valid = origin_Y_train.iloc[train_idx], origin_Y_train.iloc[valid_idx]
+        models, loss = train_model(X_train, Y_train, X_valid, Y_valid)
+        predictions = predict_data(models, X_test)
+        if idx == 0:
+            result = predictions
+        else:
+            result = result+predictions
+    return (result / 4)

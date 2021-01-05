@@ -11,7 +11,7 @@ trainData = load_train(days=3,cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"])
 testData = load_test(days=3,cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"])
 # trainData.to_csv('./dfTrain.csv', index=False)
 # # DHI가 0인 행 제거
-# list_zero = trainData[trainData["DHI"] == 0].index
+# list_zero = trainData[trainData["0afterDHI"] == 0].index
 # trainData =  trainData.drop(list_zero)
 
 # train , test 분리
@@ -36,11 +36,17 @@ submission.loc[submission.id.str.contains("Day8"), "q_0.1":] = predictions_2.sor
 # # DHI가 0인날 예측 0으로 채우기
 # for i in range(81):
 #     for j in range(48):
-#         if(testData.iloc[i*48+j]["DHI"] == 0): 
+#         if(testData.iloc[i*48+j]["0afterDHI"] == 0): 
 #             submission.iloc[i*48+j, 1:] = 0
 
 # 저장하고 평균 loss 출력
-submission.to_csv('./subs/20210103_2305.csv', index=False)
+submission.to_csv('./subs/20210104_1859.csv', index=False)
 print("===Loss mean: {0}".format(total_loss/18))
 
+
 #%%
+#Feature importance
+from lightgbm import plot_importance
+import matplotlib.pyplot as plt
+f, ax = plt.subplots(figsize=(6,6))
+plot_importance(models_1[4],ax=ax)

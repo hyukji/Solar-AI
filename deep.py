@@ -4,13 +4,11 @@ import numpy as np
 
 from module.data import get_train, get_test, save_submission, concat_data
 # %%
-cons = 96
-unit = 1
-removed_cols = ['Day', 'Minute']
+cons = 3
+unit = 48
+removed_cols = ['Day', 'Hour', 'Minute']
 
 df_train_x, df_train_y = get_train(cons, unit, removed_cols)
-# df_train_x = concat_data(df_train_x, 3, -1)
-# df_train_x = df_train_x.fillna(method="bfill")
 
 X_test = get_test(cons, unit, removed_cols)
 
@@ -24,10 +22,11 @@ from sklearn.model_selection import train_test_split
 X_train_1, X_valid_1, Y_train_1, Y_valid_1 = train_test_split(df_train_x, df_train_y.iloc[:, 0], test_size=0.3, random_state=0)
 X_train_2, X_valid_2, Y_train_2, Y_valid_2 = train_test_split(df_train_x, df_train_y.iloc[:, 1], test_size=0.3, random_state=0)
 # %%
+# get absolute test data from train data (For last cell)
 # X_train_1, ttx, Y_train_1, tty = train_test_split(X_train_1, Y_train_1, test_size=0.2, random_state=0)
 # %%
 from module.deep import train_data, test_data
-dims = [672, 384, 180]
+dims = [18, 256, 128, 32]
 # dims = [384, 180, 60]
 params = {'lr': 0.001}
 # Target1

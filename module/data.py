@@ -46,7 +46,7 @@ def get_one_data(data):
     # return res
 
 # train과 test의 데이터 전처리
-def preprocess_data(data, consecutive, unit, removed_cols, is_train):
+def preprocess_data(data, consecutive, unit, removed_cols, additional, is_train):
     # 원하는 칼럼 추가 및 삭제 가능
     # ex, temp['GHI'] = temp['DHI'] + temp['DNI']
 
@@ -54,25 +54,29 @@ def preprocess_data(data, consecutive, unit, removed_cols, is_train):
     temp = data.copy()
     temp = temp.drop(removed_cols, axis='columns')
     temp = concat_data(temp, consecutive, unit)
+    if additional:
+        temp = concat_data(temp, additional[0], additional[1])
+        col = f'TARGET_{consecutive-1}_0'
+    else:
+        col = f'TARGET_{consecutive-1}' # concat_data에서 마지막으로 추가된 df의 target column 이름
     
     if is_train:
-        after_days = [1, 2]
-        col = f'TARGET_{consecutive-1}' # concat_data에서 마지막으로 추가된 df의 target column 이름
+        after_days = (1, 2)
 
         temp = add_future_feats(temp, after_days, col) # Target 데이터 추가
         temp = temp.dropna()
         return temp
 
     else:
-        # temp = concat_data(temp, 3, -1)
         temp = temp.dropna()
         temp = get_one_data(temp)
         return temp
 
+rc = ['Day', 'Minute']
 # train 파일 입출력 및 전처리
-def get_train(consecutive, unit, removed_cols = ['Day', 'Minute'], save=None):
+def get_train(consecutive, unit, removed_cols=rc, additional=None, save=None):
     temp = pd.read_csv('./data/train/train.csv')
-    df_train = preprocess_data(temp, consecutive, unit, removed_cols, is_train=True)
+    df_train = preprocess_data(temp, consecutive, unit, removed_cols, additional, is_train=True)
     if save == 'csv':
         df_train.to_csv(f'./df_train.csv')
     elif save == 'pickle':
@@ -82,13 +86,13 @@ def get_train(consecutive, unit, removed_cols = ['Day', 'Minute'], save=None):
     return df_train.iloc[:, :-2], df_train.iloc[:, -2:]
 
 # test 파일 입출력 및 전처리
-def get_test(consecutive, unit, removed_cols = ['Day', 'Minute'], save=None):
+def get_test(consecutive, unit, removed_cols=rc, additional=None, save=None):
     df_test = []
 
     for i in range(81):
         file_path = './data/test/' + str(i) + '.csv'
         temp = pd.read_csv(file_path)
-        temp = preprocess_data(temp, consecutive, unit, removed_cols, is_train=False)
+        temp = preprocess_data(temp, consecutive, unit, removed_cols, additional, is_train=False)
         df_test.append(temp)
 
     X_test = pd.concat(df_test)

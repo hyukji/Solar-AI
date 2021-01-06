@@ -16,6 +16,7 @@ X_train_2, X_valid_2, Y_train_2, Y_valid_2 = train_test_split(df_train_x, df_tra
 X_test = get_test(cons, unit, removed_cols, save='csv')
 
 # %%
+# get absolute test data from train data (For last cell)
 X_train_1, ttx, Y_train_1, tty = train_test_split(X_train_1, Y_train_1, test_size=0.2, random_state=0)
 # %%
 from module.lgbm import train_data, test_data

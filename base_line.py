@@ -85,7 +85,7 @@ def train_data(X_train, Y_train, X_valid, Y_valid, X_test):
         LGBM_models.append(model)
         LGBM_actual_pred = pd.concat([LGBM_actual_pred,pred],axis=1)
 
-    LGBM_actual_pred.columns=quantiles
+    LGBM_actual_pred.columns = quantiles
     
     return LGBM_models, LGBM_actual_pred
 

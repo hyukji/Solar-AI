@@ -17,7 +17,7 @@ class Solar_Dataset(Dataset):
 
         return x, y
 
-class Solar_Model(nn.Module):
+class Day7_Model(nn.Module):
     def __init__(self, len_features, len_quantile = 9):
         super().__init__()
         self.fc = nn.Sequential(
@@ -41,7 +41,35 @@ class Solar_Model(nn.Module):
 
         return x
 
+    def _day(self):
+        return "Day7"
 
+class Day8_Model(nn.Module):
+    def __init__(self, len_features, len_quantile = 9):
+        super().__init__()
+        self.fc = nn.Sequential(
+            nn.Linear(len_features, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+
+            nn.Linear(256, 128),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+
+            nn.Linear(128, 32),
+            nn.BatchNorm1d(32),
+            nn.ReLU(),
+
+            nn.Linear(32, len_quantile)
+        )
+
+    def forward(self, x):
+        x = self.fc(x)
+
+        return x
+    
+    def _day(self):
+        return "Day8"
 
 def Solar_loss(preds, y, quantiles):    
     losses = []
@@ -56,7 +84,7 @@ def Solar_loss(preds, y, quantiles):
 
     return loss_mean
 
-class EarlyStopping(): # https://forensics.tistory.com/29
+class EarlyStopping(): # https://forensics.tistory.com/29 참조
     def __init__(self, patience = 10, verbose= True):
         self._step = 0
         self._loss = float('inf')

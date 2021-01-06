@@ -26,3 +26,17 @@ Solar-AI
 + **20210105_1340.csv**: kfold units 4, 2000 LGBM
 + **20210105_1350.csv**: kfold units 4, 4000 LGBM
     -> 1.94점
++ **20210105_1445.csv**: kfold units 5, 3000 LGBM
++ **20210105_2135.csv**: kfold units 5, 3000 LGBM, 밤제거
+    -> 2.12
++ **20210106_1355.csv**: kfold units 4, 1000 catbm, 밤제거
++ **20210106_1405.csv**: kfold units 4, 3000 catbm, 밤제거
++ **20210106_1430.csv**: kfold units 4, 2000 catbm
+    -> 1.91
++ **20210106_1823.csv**: kfold units 4, 2000 catbm, 밤제거
+발전량예측과 기상예측 분리 ,, ?
+
+논문 참고
+1. 발전량, 기상 분리
+2. 이동평균, 기울기
+3. GHI

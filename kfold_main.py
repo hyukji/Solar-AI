@@ -2,12 +2,17 @@
 import pandas as pd
 import numpy as np
 from modules.data_process import load_test, load_train, save_subs,save_trainData
+from modules.load_mvag import load_mAvg_train,load_mAvg_test
 from modules.CatBM import kFold_train_and_predict
 
 
 
-loadedCsv = load_train(days=3,cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"])
-testData = load_test(days=3,cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"])
+# trainData = load_train(days=3,cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"])
+# testData = load_test(days=3,cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"])
+trainData = load_mAvg_train(days=3, select=[1,2], cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"])
+testData = load_mAvg_test(days=3, select=[1,2], cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"])
+
+
 # avgData = add_moving_average(trainData, days=2, cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"])
 # save_trainData(avgData)
 #%%

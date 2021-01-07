@@ -30,27 +30,6 @@ def load_train(days=1, cols=['TARGET']):
     trainData = preprocessData(trainCsv, prevs=range(days,-1,-1) ,cols=cols , isTrain=True)
     return trainData
 
-def add_moving_average(data, days=1, cols=['TARGET']):
-    trainCsv = pd.read_csv("./data/train/train.csv")
-    
-    prevs = range(days,-1,-1)
-    for prev in prevs:
-        for col in cols:
-            tag= "tmp{0}after{1}".format(prev,col)
-            retData[tag] = retData[col].shift(prev*48, fill_value=np.nan)  
-            retCols.append(tag)
-    retData = data.copy()
-    retCols = data.columns
-    for col in cols:
-        tag = f"{days}_Avg_{col}"
-        retData[tag] = addData[f"0after{col}"]
-        for i in range(days,0,-1):
-            refData[tag] = retData[tag] + addData[f"{i}after{col}"]
-        # retData[tag] /= (days+1)
-        # retCols.append(tag)
-    return addData[addCols].dropna()
-
-
 def save_trainData(data):
     now = time.localtime()
     data.to_csv(f"./data/{now.tm_year:02d}{now.tm_mon:02d}{now.tm_mday:02d}_{now.tm_hour:02d}{now.tm_min:02d}.csv")

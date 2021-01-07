@@ -45,9 +45,11 @@ df_test = []
 for i in range(81):
     file_path = './data/test/' + str(i) + '.csv'
     temp = pd.read_csv(file_path)
-    temp = preprocess_data(temp, target_lags=[48], weather_lags=[48], is_train=False).iloc[-48:]
+    temp = preprocess_data(temp, target_lags=[0,48], weather_lags=[0,48], is_train=False).iloc[-48:]
     df_test.append(temp)
 X_test = pd.concat(df_test)
+X_test.head()
+#%%
 X_test.shape
 from sklearn.model_selection import train_test_split
 X_train_1, X_valid_1, Y_train_1, Y_valid_1 = train_test_split(df_train.iloc[:, :-2], df_train.iloc[:, -2], test_size=0.3, random_state=0)

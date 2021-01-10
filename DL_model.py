@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+import copy
 import torch.nn.functional as F
 from torch.utils.data import Dataset
 
@@ -91,7 +92,9 @@ class EarlyStopping(): # https://forensics.tistory.com/29 참조
         self.patience  = patience
         self.verbose = verbose
 
-    def validate(self, loss):
+        self.best_model_data = None
+
+    def validate(self, loss, model):
         if self._loss < loss: #
             self._step += 1
             if self._step > self.patience:
@@ -101,6 +104,10 @@ class EarlyStopping(): # https://forensics.tistory.com/29 참조
         else:
             self._step = 0
             self._loss = loss
+            self.best_model_data = copy.deepcopy(model.state_dict())
             print(f"step: {self._step}, loss: {self._loss}")
 
         return False
+
+    def best_model_wts(self):
+        return self.best_model_data

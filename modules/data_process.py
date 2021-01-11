@@ -30,15 +30,6 @@ def load_train(days=1, cols=['TARGET']):
     trainData = preprocessData(trainCsv, prevs=range(days,-1,-1) ,cols=cols , isTrain=True)
     return trainData
 
-def save_trainData(data):
-    now = time.localtime()
-    data.to_csv(f"./data/{now.tm_year:02d}{now.tm_mon:02d}{now.tm_mday:02d}_{now.tm_hour:02d}{now.tm_min:02d}.csv")
-
-def save_subs(subs):
-    now = time.localtime()
-    subs.to_csv(f"./subs/{now.tm_year:02d}{now.tm_mon:02d}{now.tm_mday:02d}_{now.tm_hour:02d}{now.tm_min:02d}.csv", index=False)
-
-
 def load_test(days=1, cols=['TARGET']):
     testList = []
     for i in range(81):
@@ -48,6 +39,14 @@ def load_test(days=1, cols=['TARGET']):
         testList.append(temp)
     testData = pd.concat(testList)
     return testData
+
+def save_trainData(data):
+    now = time.localtime()
+    data.to_csv(f"./data/{now.tm_year:02d}{now.tm_mon:02d}{now.tm_mday:02d}_{now.tm_hour:02d}{now.tm_min:02d}.csv")
+
+def save_subs(subs):
+    now = time.localtime()
+    subs.to_csv(f"./subs/{now.tm_year:02d}{now.tm_mon:02d}{now.tm_mday:02d}_{now.tm_hour:02d}{now.tm_min:02d}.csv", index=False)
 
 def delete_zero(data):
     temp = data.copy()

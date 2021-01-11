@@ -5,7 +5,7 @@ from sklearn.model_selection import KFold
 
 quantiles = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 lgb_params = {
-    'n_estimators':3000,
+    'n_estimators':5000,
     'learning_rate':0.02,
     'feature_fraction': 0.7
 }
@@ -37,7 +37,7 @@ def predict_data(models, X_test):
     return predictions
 
 def kFold_train_and_predict(origin_X_train, origin_Y_train, X_test):
-    kfold = KFold(n_splits=5,shuffle=True, random_state=0)
+    kfold = KFold(n_splits=4,shuffle=True, random_state=0)
     result = pd.DataFrame()
     totalLoss = 0
     for idx, (train_idx, valid_idx) in enumerate(kfold.split(origin_X_train)):
@@ -51,4 +51,4 @@ def kFold_train_and_predict(origin_X_train, origin_Y_train, X_test):
             result = predictions
         else:
             result = result+predictions
-    return (result / 5), totalLoss
+    return (result / 4), totalLoss

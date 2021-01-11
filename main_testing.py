@@ -8,6 +8,7 @@ warnings.filterwarnings("ignore")
 from sklearn.model_selection import train_test_split
 
 from sl_data_module import get_train, get_test
+from dh_data_module import load_train, delete_zero, load_test, load_change_test
 from DL_model import Day7_Model, Day8_Model, Solar_Dataset, Solar_loss, EarlyStopping
 
 import torch
@@ -32,8 +33,11 @@ with open("trying_num.txt", 'r') as f:
 with open("trying_num.txt", "w") as f:
     f.write(trying_num)
 
-X_Test = get_test(cons, unit)
-X_Test = np.array(X_Test.values)
+# X_Test = get_test(cons, unit)
+
+# testData = load_test(days=3,cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"])
+testData = load_change_test(days=3, select=[1,3], cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"],includeRaw=True)
+X_Test = np.array(testData.values)
 
 print("X_Test", X_Test.shape)
 

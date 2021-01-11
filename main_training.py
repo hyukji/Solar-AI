@@ -6,7 +6,7 @@ import copy
 from sklearn.model_selection import train_test_split
 
 from sl_data_module import get_train, get_test
-from dh_data_module import load_train, delete_zero
+from dh_data_module import load_train, delete_zero, load_test, load_change_train
 from DL_model import Day7_Model, Day8_Model, Solar_Dataset, Solar_loss, EarlyStopping
 
 import torch
@@ -25,7 +25,7 @@ epochs = 100
 batch_size = 256
 patience = 20
 quantiles = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-lr = 2e-3
+lr = 0.05
 
 num_kfolds = 3
 # one_year_data = 365 * 48
@@ -45,37 +45,22 @@ with open("trying_num.txt", "w") as f:
     f.write(trying_num)
 
 
-X_train, Y_train= get_train(cons, unit)
+# X_train, Y_train= get_train(cons, unit)
 # X_Test = get_test(cons, unit)
 
-X_train = np.array(X_train.values)
-Y_train = np.array(Y_train.values)
+# trainData = load_train(days=3,cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"])
+trainData = load_change_train(days=3, select=[1,3], cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"], includeRaw=True)
+zero_trainData = delete_zero(trainData)
+
+X_train = np.array(zero_trainData.iloc[:, :-2].values)
+Y_train = np.array(zero_trainData.iloc[:, -2:].values)
 
 print(X_train.shape, Y_train.shape)
-# X_Test = np.array(X_Test.values)
 
 
-# StratifiedKFold
-# X_train_1, X_valid_1, Y_train_1, Y_valid_1 = train_test_split(X_train, Y_train[:, 0].reshape(-1, 1), test_size=0.3, random_state=0)
-# train_1_Dataset = Solar_Dataset(X_train_1, Y_train_1)
-# valid_1_Dataset = Solar_Dataset(X_valid_1, Y_valid_1)
-# loader_train_1 = DataLoader(train_1_Dataset, batch_size=batch_size, shuffle=True)
-# loader_valid_1 = DataLoader(valid_1_Dataset, batch_size=batch_size, shuffle=False)
-# print(X_train_1.shape, Y_train_1.shape, X_valid_1.shape, Y_valid_1.shape)
-
-
-# X_train_2, X_valid_2, Y_train_2, Y_valid_2 = train_test_split(X_train, Y_train[:, 1].reshape(-1, 1), test_size=0.3, random_state=0)
-# train_2_Dataset = Solar_Dataset(X_train_2, Y_train_2)
-# valid_2_Dataset = Solar_Dataset(X_valid_2, Y_valid_2)
-# loader_train_2 = DataLoader(train_2_Dataset, batch_size=batch_size, shuffle=True)
-# loader_valid_2 = DataLoader(valid_2_Dataset, batch_size=batch_size, shuffle=False)
-
-
-# loader_train = [loader_train_1, loader_train_2]
-# loader_valid = [loader_valid_1, loader_valid_2]
 
 group_size = int(X_train.shape[0] / 3 )
-groups = [0] * group_size + [1] * group_size + [2] * group_size
+groups = [0] * (group_size + 1) + [1] * group_size + [2] * group_size
 feature_num = X_train.shape[1] 
 
 models = [Day7_Model(feature_num), Day8_Model(feature_num)]

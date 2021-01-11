@@ -111,3 +111,6 @@ class EarlyStopping(): # https://forensics.tistory.com/29 참조
 
     def best_model_wts(self):
         return self.best_model_data
+
+    def best_loss(self):
+        return self._loss

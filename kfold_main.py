@@ -1,7 +1,7 @@
 #%%
 import pandas as pd
 import numpy as np
-from modules.data_process import load_test, load_train, save_subs,save_trainData
+from modules.data_process import load_test, load_train, save_csv
 from modules.load_mvag import load_mAvg_train,load_mAvg_test
 from modules.load_change import load_change_test, load_change_train
 from modules.CatBM import kFold_train_and_predict
@@ -24,6 +24,6 @@ submission.loc[submission.id.str.contains("Day7"), "q_0.1":] = predictions_1.sor
 submission.loc[submission.id.str.contains("Day8"), "q_0.1":] = predictions_2.sort_index().values
 
 # 저장하고 평균 loss 출력
-save_subs(submission)
+save_csv(submission)
 print("===Loss mean: {0}".format((loss_1+loss_2)/72))
 # %%

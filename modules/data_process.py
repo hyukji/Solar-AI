@@ -30,6 +30,7 @@ def load_train(days=1, cols=['TARGET']):
     trainData = preprocessData(trainCsv, prevs=range(days,-1,-1) ,cols=cols , isTrain=True)
     return trainData
 
+
 def load_test(days=1, cols=['TARGET']):
     testList = []
     for i in range(81):
@@ -40,20 +41,19 @@ def load_test(days=1, cols=['TARGET']):
     testData = pd.concat(testList)
     return testData
 
-def save_trainData(data):
+# 데이터를 csv로 저장(파일명은 YYYYMMDD_hhmm)
+def save_csv(data):
     now = time.localtime()
-    data.to_csv(f"./data/{now.tm_year:02d}{now.tm_mon:02d}{now.tm_mday:02d}_{now.tm_hour:02d}{now.tm_min:02d}.csv")
+    data.to_csv(f"./data/{now.tm_year:02d}{now.tm_mon:02d}{now.tm_mday:02d}_{now.tm_hour:02d}{now.tm_min:02d}.csv", index=False)
 
-def save_subs(subs):
-    now = time.localtime()
-    subs.to_csv(f"./subs/{now.tm_year:02d}{now.tm_mon:02d}{now.tm_mday:02d}_{now.tm_hour:02d}{now.tm_min:02d}.csv", index=False)
-
+# input data에서 DHI가 0인 날 행삭제
 def delete_zero(data):
     temp = data.copy()
     list_zero = temp[temp["0afterDHI"] == 0].index
     temp = temp.drop(list_zero)
     return temp
 
+# input data에서 DHI가 0인 날은 target도 0
 def submission_zero(data, subs):
     temp = subs.copy()
     for i in range(81):

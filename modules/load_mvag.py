@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from modules.data_process import preprocessData
 
+#이동평균 불러오기
 def moving_average(data, days=1,select=[1],cols=['TARGET'], isTrain=True, includeRaw=False):
     temp = data.copy()
     temp = preprocessData(temp, prevs=range(days,-1,-1) ,cols=cols , isTrain=isTrain)

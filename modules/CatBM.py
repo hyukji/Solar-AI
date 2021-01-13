@@ -42,7 +42,7 @@ def predict_data(models, X_test):
     return predictions
 
 def kFold_train_and_predict(origin_X_train, origin_Y_train, X_test):
-    kfold = KFold(n_splits=4,shuffle=True, random_state=0)
+    kfold = KFold(n_splits=3,shuffle=True, random_state=0)
     result = pd.DataFrame()
     totalLoss = 0
     for idx, (train_idx, valid_idx) in enumerate(kfold.split(origin_X_train)):
@@ -56,4 +56,4 @@ def kFold_train_and_predict(origin_X_train, origin_Y_train, X_test):
             result = predictions
         else:
             result = result+predictions
-    return (result / 4), totalLoss
+    return (result / 3), totalLoss

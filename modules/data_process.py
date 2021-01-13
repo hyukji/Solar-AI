@@ -3,7 +3,7 @@ import pandas as pd
 import time
 
 # 전날 날씨 추가, 1,2일뒤의 Target 추가 함수
-def loadPreviousDays(data, prevs, cols=['TARGET']):
+def loadPreviousDays(data,unit=48 ,prevs=[1], cols=['TARGET']):
     retCols = []
     retData = data.copy()
     retData["1DayAfter"] = retData['TARGET'].shift(-48, fill_value=np.nan)
@@ -11,14 +11,14 @@ def loadPreviousDays(data, prevs, cols=['TARGET']):
     for prev in prevs:
         for col in cols:
             tag= "{0}after{1}".format(prev,col)
-            retData[tag] = retData[col].shift(prev*48, fill_value=np.nan)  
+            retData[tag] = retData[col].shift(prev*unit, fill_value=np.nan)  
             retCols.append(tag)
     return retData, retCols
 
 # 데이터 전처리 함수
-def preprocessData(data, prevs=[1],cols=['TARGET'], isTrain=True):
+def preprocessData(data,unit=48, prevs=[1],cols=['TARGET'], isTrain=True):
     retData = data.copy()
-    retData, retCols = loadPreviousDays(data, prevs, cols)
+    retData, retCols = loadPreviousDays(data,unit=unit ,prevs=prevs, cols=cols)
     if isTrain == True:
         return retData[retCols + ['1DayAfter', '2DayAfter']].dropna()
     else:
@@ -42,9 +42,12 @@ def load_test(days=1, cols=['TARGET']):
     return testData
 
 # 데이터를 csv로 저장(파일명은 YYYYMMDD_hhmm)
-def save_csv(data):
+def save_csv(data, isSub=False):
     now = time.localtime()
-    data.to_csv(f"./data/{now.tm_year:02d}{now.tm_mon:02d}{now.tm_mday:02d}_{now.tm_hour:02d}{now.tm_min:02d}.csv", index=False)
+    if isSub==False:
+        data.to_csv(f"./data/{now.tm_year:02d}{now.tm_mon:02d}{now.tm_mday:02d}_{now.tm_hour:02d}{now.tm_min:02d}.csv", index=False)
+    else:
+        data.to_csv(f"./subs/{now.tm_year:02d}{now.tm_mon:02d}{now.tm_mday:02d}_{now.tm_hour:02d}{now.tm_min:02d}.csv", index=False)
 
 # input data에서 DHI가 0인 날 행삭제
 def delete_zero(data):

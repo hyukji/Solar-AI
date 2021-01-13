@@ -8,23 +8,8 @@ from modules.data_process import preprocessData
 def get_change(data, days=1,select=[1],cols=['TARGET'], isTrain=True, includeRaw=False, fromZero=False):
     temp = data.copy()
     temp = preprocessData(temp,unit=1 ,prevs=range(days,-1,-1) ,cols=cols , isTrain=isTrain)
-    retCols = []
-    for col in cols:
-        retCols.append(f"0after{col}")
-        for i in range(1,days+1):
-            if includeRaw==True:
-                retCols.append(f"{i}after{col}")
-            if fromZero==False:
-                temp[f"{i}diff{col}"] = temp[f"{i}after{col}"] - temp[f"{i-1}after{col}"]
-            else:
-                temp[f"{i}diff{col}"] = temp[f"{i}after{col}"] - temp[f"0after{col}"]
-    for i in select:
-        for col in cols:
-            retCols.append(f"{i}diff{col}")
-    if isTrain == True:
-        return temp[retCols + ['1DayAfter', '2DayAfter']]
-    else:
-        return temp[retCols]
+    temp = add_change_data(temp,select,cols,isTrain,includeRaw,fromZero)
+    return temp
 
 # 전처리가 되어있는 데이터에 변화량 열 추가
 def add_change_data(data,select=[1],cols=['TARGET'],isTrain=True ,includeRaw=False, fromZero=False):

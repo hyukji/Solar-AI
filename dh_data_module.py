@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import time
+import copy
 
 # 전날 날씨 추가, 1,2일뒤의 Target 추가 함수
 def loadPreviousDays(data, prevs, cols=['TARGET']):
@@ -84,9 +85,10 @@ def submission_zero(data, subs):
                 temp.iloc[i*48+j, 1:] = 0
     return temp
 
-def get_change(data, days=1,select=[1],cols=['TARGET'], isTrain=True, includeRaw=False):
+def get_change(data, days=1,select=[1], cols=['TARGET'], isTrain=True, includeRaw=False):
     temp = data.copy()
-    temp = preprocessData(temp, prevs=range(days,-1,-1) ,cols=cols , isTrain=isTrain)
+    temp = preprocessData(temp, prevs=range(days,-1,-1) , cols=cols , isTrain=isTrain)
+
     retCols = []
     for col in cols:
         retCols.append(f"0after{col}")

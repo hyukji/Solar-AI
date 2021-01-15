@@ -106,7 +106,6 @@ for i, model in enumerate(models):
 
 
                 for _, (x, y) in enumerate(loader):
-                    # print("x", x.shape)
                     y_pred = model(x)
                     loss = Solar_loss(y_pred, y, quantiles) 
                     optimizer.zero_grad()

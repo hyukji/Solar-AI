@@ -5,10 +5,16 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset
 
 class LSTM_Model(torch.nn.Module): 
-    def __init__(self, input_dim, hidden_dim, output_dim, num_layers):
-        super(Net, self).__init__()
+    def __init__(self, input_dim, hidden_dim, output_dim, layers, target_date):
+        super(LSTM_Model, self).__init__()
         self.lstm = torch.nn.LSTM(input_dim, hidden_dim, num_layers = layers, batch_first = True)
-        self.fc = torch.nn.Linear(hidden_dim, output_dim, bias = True)
+        self.fc = nn.Sequential(
+            nn.Linear(hidden_dim, target_date * 48, bias = True),
+            nn.BatchNorm1d(target_date * 48),
+
+            nn.Linear(target_date * 48, output_dim * target_date * 48, bias = True),
+            nn.BatchNorm1d(output_dim * target_date * 48),
+        )
 
     def forward(self, x):
         x, _status = self.lstm(x)

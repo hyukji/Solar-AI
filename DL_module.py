@@ -21,8 +21,8 @@ class Solar_Dataset(Dataset):
 
 def Solar_loss(preds, y, quantiles):    
     losses = []
+    print(preds.shape, y.shape)
     for i, q in enumerate(quantiles): 
-
         error = y.squeeze() - preds[:, i]
         loss = torch.where(error > 0, error * q, error * (q - 1)).unsqueeze(1)
         losses.append(loss)
@@ -32,6 +32,25 @@ def Solar_loss(preds, y, quantiles):
 
     return loss_mean
     
+
+
+
+def Solar_total_loss(preds, ys, quantiles):    
+    losses = []
+    for t in range(48):
+        pred = preds[:, t*9:(t+1)*9]
+        y = ys[:, t]
+        for i, q in enumerate(quantiles): 
+            # print(pred.shape, y.shape)
+            error = y.squeeze() - preds[:, i]
+            loss = torch.where(error > 0, error * q, error * (q - 1)).unsqueeze(1)
+            losses.append(loss)
+    
+    loss_sum = torch.mean(torch.cat(losses, dim=1), dim=1)
+    loss_mean = torch.mean(loss_sum)
+
+    return loss_mean
+
 
 class EarlyStopping(): # https://forensics.tistory.com/29 참조
     def __init__(self, patience = 10, verbose= True):

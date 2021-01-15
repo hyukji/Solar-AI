@@ -7,10 +7,11 @@ from sklearn.model_selection import train_test_split
 
 from sl_data_module import get_train, get_test
 from dh_data_module import load_train, delete_zero, load_test, load_change_train
-from jh_data_module import get_train_data
+from jh_data_module import get_train_total_data
 
 from DL_model import LSTM_Model
-from DL_module import Solar_Dataset, Solar_loss, EarlyStopping
+from DL_model import LSTM_Model
+from DL_module import Solar_Dataset, Solar_total_loss, EarlyStopping
 
 import torch
 from torch import nn, optim 
@@ -25,13 +26,13 @@ warnings.filterwarnings("ignore")
 
 ## parameter #######
 epochs = 100
-batch_size = 128
+batch_size = 50
 patience = 20
 quantiles = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-lr = 0.001
+lr = 0.07
 
 num_kfolds = 3
-hidden_dim = 24
+hidden_dim = 128
 ####################
 
 trying_num = None
@@ -43,32 +44,31 @@ with open("trying_num.txt", "w") as f:
     f.write(trying_num)
 
 
-cols = ["Hour","DHI", "DNI", "WS", "RH", "T", "TARGET"]
-history_date = 6
+cols = ["Hour","DHI", "DNI", "WS", "RH", "T"]
+history_date = 3
 target_date = 1
 
-X_train, Y_train = get_train_data(cols, history_date, target_date)
+X_train, Y_train = get_train_total_data(cols, history_date, target_date)
+print(X_train.shape, Y_train.shape)
 
 
 group_size = int(X_train.shape[0] / 3 )
-groups = [0] * group_size + [1] * group_size + [2] * group_size
+groups = [0] * (group_size + 1) + [1] * (1+ group_size) + [2] * group_size
 feature_num = X_train.shape[2] 
 
 group_k_fold = GroupKFold(n_splits= num_kfolds)
 # print("feature_num", feature_num, len(groups))
 
 X = X_train
-Y = Y_train.reshape((-1, 1))
-print(X_train.shape, Y.shape)
-print("training start feature_num", feature_num)
+Y = Y_train
+print("training start")
 
 model = LSTM_Model(feature_num, hidden_dim, len(quantiles), 2, target_date)
 
 for folder_num, (train_idx, valid_idx) in enumerate(group_k_fold.split(X, Y, groups)): 
     train_Dataset = Solar_Dataset(X[train_idx], Y[train_idx])
     valid_Dataset = Solar_Dataset(X[valid_idx], Y[valid_idx])
-
-    loader_train = DataLoader(train_Dataset, batch_size=batch_size, shuffle=True)
+    loader_train = DataLoader(train_Dataset, batch_size=batch_size, shuffle=False)
     loader_valid = DataLoader(valid_Dataset, batch_size=batch_size, shuffle=False)
 
 
@@ -89,7 +89,7 @@ for folder_num, (train_idx, valid_idx) in enumerate(group_k_fold.split(X, Y, gro
 
             for _, (x, y) in enumerate(loader):
                 y_pred = model(x)
-                loss = Solar_loss(y_pred, y, quantiles) 
+                loss = Solar_total_loss(y_pred, y, quantiles) 
                 optimizer.zero_grad()
                 if mode == 'Train':  # 학습 모드인 경우
                     loss.backward()
@@ -105,7 +105,7 @@ for folder_num, (train_idx, valid_idx) in enumerate(group_k_fold.split(X, Y, gro
             torch.save({
             'model': early_stopping.best_model_wts(),
             'loss': early_stopping.best_loss(),
-            }, PATH + f"{trying_num}_Day7_{folder_num}.tar")  # 모델 값 저장.
+            }, PATH + f"{trying_num}_{folder_num}.tar")  # 모델 값 저장.
             print(f"{folder_num} saved!")
             break
 

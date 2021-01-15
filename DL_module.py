@@ -21,7 +21,6 @@ class Solar_Dataset(Dataset):
 
 def Solar_loss(preds, y, quantiles):    
     losses = []
-    print(preds.shape, y.shape)
     for i, q in enumerate(quantiles): 
         error = y.squeeze() - preds[:, i]
         loss = torch.where(error > 0, error * q, error * (q - 1)).unsqueeze(1)

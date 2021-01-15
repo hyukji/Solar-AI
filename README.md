@@ -26,6 +26,8 @@
 3. keras RNN LSTM (RNN.py) : 특별한 이점이 없음
 4. OLS, Quantile Regreesion, Random Forests, Gradient Boosting (comparison.py)
 	- https://colab.research.google.com/drive/1nXOlrmVHqCHiixqiMF6H8LSciz583_W2#scrollTo=f4nQmq2b9H7s
+	- 이중 RF의 결과가 가장 좋았으며 RF.py를 따로 만듦. lgbm regressor의 parameter 중 boosting을 다양하게 바꾸어 보는 시도가 필요함.
 
 ## 다른 시도
 1. (season.py) TARGET을 기준으로 계절을 winter, fall(=spring), summer로 나누어 학습했는데 2.23의 결과가 나옴. 많이 시도해보지 않음.
+2. (공통) 최종값은 quantile이 증가함에 따라 당연히 증가해야 하는데 모델로 예측하면 그렇지 않음. 이를 보정해주어 순서대로 정렬했더니 lgbm 모델의 loss가 1.93에서 1.888로 떨어짐.

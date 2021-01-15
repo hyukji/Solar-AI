@@ -77,7 +77,7 @@ params = {'lr': 0.005}
 model = NN(dims, params, X_train, Y_train, X_valid, Y_valid)
 
 # %%
-model.evaluate(ttx, tty)
+# model.evaluate(ttx, tty)
 
 X_test = X_test[X_test.index % 48 == 0]
 pred = model.predict(X_test)
@@ -88,6 +88,10 @@ test_labels = pd.Series(index=range(X_test.shape[0]*48))
 for i in range(pred.size): # 81개
     test_labels.iloc[i*48] = pred[i]
 test_labels = test_labels.fillna(method='ffill')
+
+# %%
+train_labels.to_csv('./train_labels.csv')
+test_labels.to_csv('./test_labels.csv')
 # %%
 
 cons = 4

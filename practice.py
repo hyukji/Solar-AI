@@ -5,7 +5,7 @@
 # 이평선을 칼럼에서 추가할 수도 있음.
 
 # 활용한 모델
-# LGBM
+# LGBM : 
 # keras NN : feature를 많이 넣어야 함.
 # keras RNN LSTM : 특별한 이점이 없음
 
@@ -16,13 +16,15 @@
 # modelcheckpoint
 
 # 새로운 시도
-# 계절 구분해서 각기 다른 모델 학습시키기
+# 계절 구분해서 각기 다른 모델 학습시키기, 계절을 정확히 구분하는 게 아니라 어느정도 상대가중치를 부여하는 게 더 좋을 듯?
+# 최종 아웃풋 퀀타일을 정렬하기 1.93->1.888
 
 # 시도할 것
 # 퀀타일 분포를 바꾸어보기 (토론에서 분포를 넓게 했더니 더 좋아졌다는 말이 있음)
 # 밤 데이터를 아예 빼버리고 모델 학습시키기
 # 여러 모델의 배깅(선형 결합)
 # 최적 파라미터 찾기 (gridsearchsv?)
+# boosting 파라미터 여러개로 바꿔보자.
 
 # import pandas as pd
 # import numpy as np
@@ -44,15 +46,29 @@ def tilted_loss(q,y,f):
     e = (y-f)
     return np.mean(np.maximum(q*e, (q-1)*e))
 
-a=[3.97,	6.16,	6.43,	6.52,	6.06,	5.10,	6.95,	6.82,	7.28]
-b=[4.874,	5.676,	6.100,	6.214,	6.43,	6.502,	6.700,	6.872,	7.016]
-res = []
-for i in range(9):
-    q = (i+1)*0.1
-    r = tilted_loss(q, 8.01, a[i])
-    res.append(r)
-print(res)
-print(round(sum(res)/len(res), 3))
+a=[20.49,	34.69,	42.61	,42.09,	42.34,	44.22,	46.78	,44.41,	46.01]
+b=[31.850,	39.130,	42.190,	42.394,	42.61,	43.898,	44.334,	45.050, 46.164] #fraction
+c=[27.590,	38.390,	42.215	,42.475,	42.61,	43.415,	44.315,	45.210,	46.395] #midpoint
+
+k = [0, 345, 358, 368, 348, 349, 358, 385, 366]
+a = np.array(k)
+q = np.array([0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1])
+q *= 100
+print(np.percentile(a, q))
+
+def run(ll):
+    print('first aver', round(sum(ll)/len(ll), 3))
+    res = []
+    for i in range(9):
+        q = (i+1)*0.1
+        r = tilted_loss(q, 70, ll[i])
+        res.append(r)
+    # print(res)
+    print(round(sum(res)/len(res), 3))
+
+run(a)
+run(b)
+run(c)
 
 
 

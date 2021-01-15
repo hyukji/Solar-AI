@@ -60,10 +60,12 @@ models_2 = train_data(X_train_2, Y_train_2, X_valid_2, Y_valid_2)
 
 # %%
 results_2 = test_data(models_2, X_test)
-results_2 = results_2.quantile([.1, .2, .3, .4, .5, .6, .7, .8, .9], interpolation='midpoint')
+results_2 = results_2.quantile([0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1], axis=1).transpose()
 results_2[:48]
 # %%
-results_1 = results_1.apply(f, axis = 1)
+results_1 = test_data(models_1, X_test)
+results_1 = results_1.quantile([0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1], axis=1).transpose()
+results_1[:48]
 # %%
 results_1.to_pickle('./results_1.pkl')
 results_2.to_pickle('./results_2.pkl')

@@ -7,66 +7,64 @@ import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
 # %%
-removed_cols = [ 'Minute']
 
-def add_future_feats(data, after_days, cols):
-    # day: 1~
+def add_future_feats(data, after_days, col):
+    # after_days : list of day
+    # col : standard of shifting
     temp = data.copy()
     new_cols = []
-    for col in cols:
-        for i, day in enumerate(after_days):
-            new_col = f'{col}_after_{i+1}'
-            temp[new_col] = temp[col].shift(-(day*48), fill_value = np.nan)
-            new_cols.append(new_col)
+    for i, day in enumerate(after_days):
+        new_col = f'{col}_after_{i+1}'
+        temp[new_col] = temp[col].shift(-(day*48), fill_value = np.nan)
+        new_cols.append(new_col)
     return temp
 
-def concat_days(data, n_days=2): # num of consecutive days
+def concat_data(data, consecutive, unit):
+    # consecutive : num of consecutive days
+    # unit : interval (1 day = 48)
     temp = data.copy()
     res = data.copy()
-    cols_name = data.columns
-    res.columns = [f'{col}_{0}' for col in cols_name]
-    for day in range(1, n_days):
-        one_day = temp.shift(-day*48, fill_value = np.nan)
-        one_day.columns = [f'{col}_{day}' for col in cols_name]
-        res = pd.concat([res, one_day],axis=1)
+    cols_name = res.columns
+    res.columns = [f'{col}_{0}' for col in cols_name] # 시작점은 _0으로 이름 변환
+    for ele in range(1, consecutive):
+        new_ele = temp.shift(-ele*unit, fill_value = np.nan)
+        new_ele.columns = [f'{col}_{ele}' for col in cols_name] # 추가되는 df의 column마다 _n 을 붙임
+        res = pd.concat([res, new_ele],axis=1)
     return res
 
-def preprocess_data(data, is_train=True):
+def preprocess_data(data, consecutive, unit, removed_cols, additional, is_train):
+    # 원하는 칼럼 추가 및 삭제 가능
+    # ex, temp['GHI'] = temp['DHI'] + temp['DNI']
+
+    # train, test 공통 작업
     temp = data.copy()
-    # temp['GHI'] = temp['DHI'] + temp['DNI']
     temp = temp.drop(removed_cols, axis='columns')
+    temp = concat_data(temp, consecutive, unit)
+    if additional:
+        temp = concat_data(temp, additional[0], additional[1])
+        col = f'TARGET_{consecutive-1}_0'
+    else:
+        col = f'TARGET_{consecutive-1}' # concat_data에서 마지막으로 추가된 df의 target column 이름
+    
+    if is_train:
+        after_days = (1, 2)
 
-    if is_train==True:
-        after_days = [1, 2]
-        cols = ['TARGET_3']
-
-        temp = concat_days(temp, n_days=4)
-        temp = add_future_feats(temp, after_days, cols)
-     
+        temp = add_future_feats(temp, after_days, col) # Target 데이터 추가
         temp = temp.dropna()
         return temp
 
-    elif is_train==False:
-
-        temp = get_days(temp, n_days=4)
+    else:
+        temp = temp.dropna()
+        temp = get_one_data(temp)
         return temp
 
-# for test
-def get_days(data, n_days): # day: 0~6
-    assert data.shape[0] == 336 # 48*7
-    temp = data.copy()
-    res = pd.DataFrame()
-    for idx, day in enumerate(range(6, 6-n_days, -1)):
-        one_day = temp.iloc[day*48:(day+1)*48]
-        one_day.reset_index(drop=True, inplace=True)
-        cols_name = one_day.columns
-        one_day.columns = [f'{col}_{idx}' for col in cols_name]
-        res = pd.concat([res, one_day],axis=1)
-    return res
+def get_one_data(data):
+    return data.iloc[-48:]
 
 # %% finding quantile of train data
+removed_cols = ['Hour', 'Minute']
 train = pd.read_csv('./data/train/train.csv')
-df_train = preprocess_data(train, is_train=True)
+df_train = preprocess_data(train, 1, 0, removed_cols=removed_cols, is_train=True)
 grouped= df_train[[f'TARGET_{i}' for i in range(4)]].groupby(df_train['Day_1'])
 y = grouped.mean()
 y = y.mean(axis=1)

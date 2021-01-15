@@ -9,7 +9,7 @@ from module.data import concat_data
 removed_cols = ['Day', 'Minute']
 cons = 4
 unit = 48
-additional = (2, -1)
+additional = (2, -1) # cons and unit
 df_train_x, df_train_y = get_train(cons, unit, removed_cols, additional)
 
 X_train_1, X_valid_1, Y_train_1, Y_valid_1 = train_test_split(df_train_x, df_train_y.iloc[:, 0], test_size=0.3, random_state=0)

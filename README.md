@@ -11,8 +11,8 @@
 	- lgbm.py : lgbm 모델
 	- deep.py : keras.dense 모델
 
-- LGBM.py : lgbm.py의 메인 파일
-- DEEP.py : deep.py의 메인 파일
+- lgbm.py : lgbm.py의 메인 파일
+- deep.py : deep.py의 메인 파일
 - season.py : lgbm.py 기반, TARGET을 기준으로 3계절을 구분해서 학습시킴. (코드 정리 안 됨)
 - around.py : lgbm.py 기반, 연속된 날짜의 특정 시간대의 데이터를 학습시키기 위한 코드
 - comparison.py : 다양한 모델을 학습시키고 비교하는 파일. (미완성)

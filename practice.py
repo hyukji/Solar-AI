@@ -24,17 +24,35 @@
 # 여러 모델의 배깅(선형 결합)
 # 최적 파라미터 찾기 (gridsearchsv?)
 
-import pandas as pd
-import numpy as np
-preds = pd.Series([np.nan]*4)
-season = pd.Series(['winter', 'fall', 'summer', 'summer'])
-for i, v in enumerate(['winter', 'fall', 'summer']):
-    pred = pd.Series(range(i, i+4)).where(season == v)
-    preds = preds.where(preds>=0, pred)
-    print(preds)
+# import pandas as pd
+# import numpy as np
+# preds = pd.Series([np.nan]*4)
+# season = pd.Series(['winter', 'fall', 'summer', 'summer'])
+# for i, v in enumerate(['winter', 'fall', 'summer']):
+#     pred = pd.Series(range(i, i+4)).where(season == v)
+#     preds = preds.where(preds>=0, pred)
+#     print(preds)
 
-days = 672
-round(days ** (1/3))
+# days = 672
+# round(days ** (1/3))
+
+import numpy as np
+p = np.array([1, 2, 3, 4]).reshape(1, -1)
+np.percentile(p, [10, 20, 30, 40, 50, 60, 70, 80, 90])
+
+def tilted_loss(q,y,f):
+    e = (y-f)
+    return np.mean(np.maximum(q*e, (q-1)*e))
+
+a=[3.97,	6.16,	6.43,	6.52,	6.06,	5.10,	6.95,	6.82,	7.28]
+b=[4.874,	5.676,	6.100,	6.214,	6.43,	6.502,	6.700,	6.872,	7.016]
+res = []
+for i in range(9):
+    q = (i+1)*0.1
+    r = tilted_loss(q, 8.01, a[i])
+    res.append(r)
+print(res)
+print(round(sum(res)/len(res), 3))
 
 
 

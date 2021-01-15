@@ -37,7 +37,7 @@ mpl.rcParams['ytick.color'] = AXIS_COLOR
 # %%
 from module.data import get_train, get_test, save_submission
 
-cons = 2
+cons = 4
 unit = 48
 removed_cols = ['Day', 'Hour', 'Minute']
 
@@ -48,10 +48,10 @@ from sklearn.model_selection import train_test_split
 X_train_1, X_valid_1, Y_train_1, Y_valid_1 = train_test_split(df_train_x, df_train_y.iloc[:, 0], test_size=0.3, random_state=0)
 X_train_2, X_valid_2, Y_train_2, Y_valid_2 = train_test_split(df_train_x, df_train_y.iloc[:, 1], test_size=0.3, random_state=0)
 
-train_df = X_train_2
-test_df = X_valid_2
-train_labels = Y_train_2
-test_labels = Y_valid_2
+train_df = X_train_1
+test_df = X_valid_1
+train_labels = Y_train_1
+test_labels = Y_valid_1
 # %%
 train_df.describe()
 # %%
@@ -75,8 +75,10 @@ def denorm(df, idx):
 X_train = sm.add_constant(train_df.copy(deep=True))
 X_test = sm.add_constant(test_df.copy(deep=True))
 # %%
-METHODS = ['OLS', 'QuantReg', 'Random forests', 'Gradient boosting']
-            #, 'Keras', 'ensorFlow']
+preds
+# %%
+METHODS = ['Random forests']
+            #'OLS', 'QuantReg', 'Gradient boosting', 'Keras', 'ensorFlow']
 
 # QUANTILES = [0.1, 0.5, 0.9]
 QUANTILES = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
@@ -111,7 +113,7 @@ def quantile_loss(q, y, f):
 from matplotlib.ticker import FuncFormatter
 
 ax = plt.scatter(denorm(X_train, 1), train_labels, color=dot_color)
-plt.title('DNI_1 vs. Target_1 (training slice)', loc='left')
+plt.title(f'{X_train.columns[1]} vs. Target', loc='left')
 sns.despine(left=True, bottom=True)
 ax.axes.xaxis.set_major_formatter(FuncFormatter(
     lambda x, _: '{}'.format(x)))
@@ -147,6 +149,7 @@ rf = ensemble.RandomForestRegressor(n_estimators=N_ESTIMATORS,
                                     n_jobs=-1)  # Use maximum number of cores.
 rf.fit(X_train, train_labels)
 
+# %%
 def rf_quantile(m, X, q):
     rf_preds = []
     for estimator in m.estimators_:
@@ -221,15 +224,35 @@ for i, method in enumerate(METHODS):
     ax.axes.xaxis.set_major_formatter(FuncFormatter(
         lambda x, _: '{}'.format(x)))
     ax.axes.yaxis.set_major_formatter(FuncFormatter(
-        lambda y, _: '${}k'.format(y)))
+        lambda y, _: '{}'.format(y)))
     plt.xlabel('Proportion of owner-occupied units built prior to 1940')
     plt.ylabel('Median value of owner-occupied homes')
-    plt.title(method + ' quantiles', loc='left')
+    plt.title(method + ' quantiles' + f'{X_train.columns[1]} vs. Target', loc='left')
     sns.despine(left=True, bottom=True)
     plt.show()
 # %%
-preds['quantile_loss'] = quantile_loss(preds.q, preds.label, preds.pred)
+ols_full = sm.OLS(train_labels, X_train).fit()
+preds.loc[preds.method == 'OLS', 'pred'] = np.concatenate(
+    [ols_quantile(ols_full, X_test, q) for q in QUANTILES]) 
+# %%
+# Don't fit yet, since we'll fit once per quantile.
+quantreg_full = sm.QuantReg(train_labels, X_train)
+preds.loc[preds.method == 'QuantReg', 'pred'] = np.concatenate(
+    [quantreg_full.fit(q=q).predict(X_test) for q in QUANTILES])
+# %%
+N_ESTIMATORS = 1000
+rf_full = ensemble.RandomForestRegressor(n_estimators=N_ESTIMATORS, 
+                                         min_samples_leaf=1, random_state=3, 
+                                         n_jobs=-1)
+rf_full.fit(X_train, train_labels)
 
+preds.loc[preds.method == 'Random forests', 'pred'] = np.concatenate(
+    [rf_quantile(rf_full, X_test, q) for q in QUANTILES]) 
+# %%
+preds.loc[preds.method == 'Gradient boosting', 'pred'] = \
+    np.concatenate([gb_quantile(X_train, train_labels, X_test, q) 
+                    for q in QUANTILES])
+#%%
 def plot_loss_comparison(preds):
     overall_loss_comparison = preds[~preds.quantile_loss.isnull()].\
       pivot_table(index='method', values='quantile_loss').\
@@ -264,30 +287,7 @@ def plot_loss_comparison(preds):
         plt.ylabel('Quantile')
         # Reverse legend.
         ax.legend(reversed(handles), reversed(labels))
-plot_loss_comparison(preds)
 
-# %%
-ols_full = sm.OLS(train_labels, X_train).fit()
-preds.loc[preds.method == 'OLS', 'pred'] = np.concatenate(
-    [ols_quantile(ols_full, X_test, q) for q in QUANTILES]) 
-# %%
-# Don't fit yet, since we'll fit once per quantile.
-quantreg_full = sm.QuantReg(train_labels, X_train)
-preds.loc[preds.method == 'QuantReg', 'pred'] = np.concatenate(
-    [quantreg_full.fit(q=q).predict(X_test) for q in QUANTILES])
-# %%
-rf_full = ensemble.RandomForestRegressor(n_estimators=N_ESTIMATORS, 
-                                         min_samples_leaf=1, random_state=3, 
-                                         n_jobs=-1)
-rf_full.fit(X_train, train_labels)
-
-preds.loc[preds.method == 'Random forests', 'pred'] = np.concatenate(
-    [rf_quantile(rf_full, X_test, q) for q in QUANTILES]) 
-# %%
-preds.loc[preds.method == 'Gradient boosting', 'pred'] = \
-    np.concatenate([gb_quantile(X_train, train_labels, X_test, q) 
-                    for q in QUANTILES])
-#%%
 preds['quantile_loss'] = quantile_loss(preds.q, preds.label, 
                                             preds.pred)
 plot_loss_comparison(preds)
@@ -297,19 +297,24 @@ preds.loc[preds.method == 'Random forests', 'pred']
 tt = get_test(cons, unit, removed_cols)
 tt = (tt - mean) / std
 tt = sm.add_constant(tt)
-s = np.concatenate(
+s1 = np.concatenate(
     [rf_quantile(rf_full, tt, q).reshape(-1, 1) for q in QUANTILES], axis=1)
 
 # %%
-t1 = np.load('./target1.npy')
-t2 = np.load('./target2.npy')
-
-d1 = pd.DataFrame(data=t1, columns=QUANTILES)
-d2 = pd.DataFrame(data=t2, columns=QUANTILES)
+d1 = pd.DataFrame(data=s1, columns=QUANTILES)
+d2 = pd.DataFrame(data=s2, columns=QUANTILES)
 # %%
 submission = pd.read_csv('./data/sample_submission.csv')
 submission.loc[submission.id.str.contains("Day7"), "q_0.1":] = d1.sort_index().values
 submission.loc[submission.id.str.contains("Day8"), "q_0.1":] = d2.sort_index().values
-submission.to_csv(f'./submission/rf.csv', index=False)
+submission.to_csv(f'./submission/rf_4.csv', index=False)
 
+# %%
+preds['quantile_loss'].to_csv("comp.csv")
+# %%
+X_test.to_csv("x valid comp.csv")
+# %%
+preds['label'].to_csv("label com.csv")
+# %%
+preds['label']
 # %%

@@ -17,7 +17,8 @@ from torch import nn, optim
 from torch.utils.data import DataLoader, TensorDataset  
 
 batch_size = 30
-hidden_dim = 24
+hidden_dim = 64
+layers = 2
 
 ## parameter #######
 num_kfolds = 3
@@ -35,7 +36,7 @@ with open("trying_num.txt", 'r') as f:
 with open("trying_num.txt", "w") as f:
     f.write(trying_num)
 
-trying_num = 152
+
 cols = ["Hour","DHI", "DNI", "WS", "RH", "T", "TARGET"]
 history_date = 6
 target_date = 1
@@ -45,13 +46,14 @@ print(X_Test.shape)
 
 
 feature_num = X_Test.shape[2] 
-loader_test = DataLoader(TensorDataset(torch.tensor(X_Test, dtype=torch.float32)), batch_size=batch_size, shuffle=False)
+loader_test = DataLoader(torch.tensor(X_Test, dtype=torch.float32), batch_size=batch_size, shuffle=False)
 
 print("test start feature_num", feature_num)
 
 load_PATH = 'C:/Users/user/Desktop/ML대회/1. 태양광/model_data/'
 save_PATH = 'C:/Users/user/Desktop/ML대회/1. 태양광/test_data/'
-model = LSTM_Model(feature_num, hidden_dim, len(quantiles), 2, target_date)
+
+model = LSTM_Model(feature_num, hidden_dim, len(quantiles), layers, target_date)
 
 submission = pd.read_csv('./test_data/merge_37_38.csv')
 losses = []
@@ -67,7 +69,7 @@ for folder_num in range(num_kfolds):
 
     model.eval()
     for b, x in enumerate(loader_test):
-        y_pred = model(x[0]).tolist()
+        y_pred = model(x).tolist()
         pred.extend([zero_list] * 10)
         pred.extend(y_pred)
         pred.extend([zero_list] * 8)
@@ -79,9 +81,8 @@ for folder_num in range(num_kfolds):
         sum_pred += np.array(pred)
 
     print(pred.shape)
-    submission.loc[submission.id.str.contains("Day7"), "q_0.1":] = sum_pred
-    
 
+submission.loc[submission.id.str.contains("Day7"), "q_0.1":] = sum_pred
 submission.loc[submission.id.str.contains("Day7"), "q_0.1":] /= 3
 
 np_losses = np.array(losses)

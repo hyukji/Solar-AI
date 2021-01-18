@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 class LSTM_Model(torch.nn.Module): 
     def __init__(self, input_dim, hidden_dim, output_dim, layers, target_date):
         super(LSTM_Model, self).__init__()
-        self.lstm = torch.nn.LSTM(input_dim, hidden_dim, num_layers = layers, batch_first = True)
+        self.lstm = torch.nn.RNN(input_dim, hidden_dim, num_layers = layers, batch_first = True)
         self.fc = nn.Sequential(
             nn.Linear(hidden_dim, output_dim, bias = True),
         )
@@ -36,11 +36,20 @@ class Day7_Model(nn.Module):
 
             nn.Linear(32, len_quantile)
         )
+        self.fc.apply(self.init_weights)
+
 
     def forward(self, x):
         x = self.fc(x)
 
         return x
+
+
+    def init_weights(self, m):
+        if type(m) == nn.Linear:
+            torch.nn.init.xavier_uniform(m.weight)
+            m.bias.data.fill_(0.01)
+
 
     def _day(self):
         return "Day7"

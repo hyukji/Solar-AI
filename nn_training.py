@@ -50,8 +50,8 @@ with open("trying_num.txt", "w") as f:
 # X_train, Y_train= get_train(cons, unit)
 # X_Test = get_test(cons, unit)
 
-trainData = load_train(days=3,cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"])
-# trainData = load_change_train(days=3, select=[1,3], cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"], includeRaw=True)
+# trainData = load_train(days=3,cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"])
+trainData = load_change_train(days=3, select=[1,3], cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"], includeRaw=True)
 zero_trainData = delete_zero(trainData)
 # save_trainData(zero_trainData)
 

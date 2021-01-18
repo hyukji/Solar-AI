@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 
 
+
 def merge_submission(file1, file2, merged_file):
     df1 = pd.read_csv(f"./test_data/{file1}.csv")
     df2 = pd.read_csv(f"./test_data/{file2}.csv")
@@ -11,6 +12,8 @@ def merge_submission(file1, file2, merged_file):
 
     df1.to_csv(f"./test_data/{merged_file}.csv", index=False)
     print("success to merge and saved!")
+
+
 
 
     
@@ -62,7 +65,7 @@ def get_train_total_data(cols, history_date, target_date):
 def del_zero(df):
     return df[(df["Hour"] > 4) & (df["Hour"] < 20)]
 
-def LSTM_processing(data, target, start_idx, end_idx, history_size, target_size, single_step = False):
+def LSTM_processing(data, target, start_idx, end_idx, history_size, target_size, _day):
     x_train = []
     y_train = []
 
@@ -73,53 +76,41 @@ def LSTM_processing(data, target, start_idx, end_idx, history_size, target_size,
 
     step = size_of_day
 
-    sub_range = [k * 30 for k in range(7)]
+    sub_range = [k * 30 for k in range(_day)]
     for i in range(start_idx, end_idx):
         main_range = [sub + i for sub in sub_range]
-        x_train.append(data[main_range[0 : -1]])
-
-        if single_step:
-            y_train.append(target.values[main_range[-1]])
+        x_train.append(data[main_range[0 : 6]])
+        y_train.append(target.values[main_range[-1]])
             
     return np.array(x_train), np.array(y_train)
 
 
+def new_LSTM_processing(data, target, start_idx, end_idx, history_size, target_size, _day):
+    x_train = []
+    y_train = []
 
-def get_test_data(cols, history_date, target_date):
-    testList = []
-    for i in range(81):
-        file_path = './data/test/{0}.csv'.format(i)
-        test_df = pd.read_csv(file_path)
-        test_df = del_zero(test_df)
+    days = 1095
+    size_of_day = int(data.shape[0] / days) # 48
 
-        data_df = test_df[cols]
-        data = data_df.values
+    end_idx = end_idx - history_size * 30
 
-        data_mean = data.mean(axis=0)
-        data_std = data.std(axis=0)
-        data = (data - data_mean) / data_std
+    step = size_of_day
 
-        days = 6
-        size_of_day = int(data.shape[0] / days) # 30
-
-        end_idx = data.shape[0] - days * 30
-
-        step = size_of_day
-
-        sub_range = [k * 30 for k in range(6)]
-        for i in range(0, end_idx):
+    sub_range = [k * 30 for k in range(_day)]
+    for d in range(days):
+        one_day_data = [a for a in range(size_of_day)]
+        for i in range(start_idx, end_idx):
             main_range = [sub + i for sub in sub_range]
-            testList.append(data[main_range])
+            x_train.append(data[main_range[0 : 6]])
+            y_train.append(target.values[main_range[-1]])
+            
+    return np.array(x_train), np.array(y_train)
 
-
-    testData = np.array(testList)
-
-    return testData
-
+    
    
-def get_train_data(cols, history_date, target_date):
+def get_train_data(cols, history_date, target_date, _day):
     train_df = pd.read_csv("./data/train/train.csv")
-    train_df = del_zero(train_df)
+    # train_df = del_zero(train_df)
 
     data_df = train_df[cols]
     data = data_df.values
@@ -133,6 +124,46 @@ def get_train_data(cols, history_date, target_date):
     history_size = history_date # 6일 * 48데이터
     target_size = target_date # 2일 * 48데이터
 
-    x_train, y_train = LSTM_processing(data, train_df["TARGET"], 0, data.shape[0], history_size, target_size, single_step = True)
+    x_train, y_train = LSTM_processing(data, train_df["TARGET"], 0, data.shape[0], history_size, target_size, _day)
 
     return x_train, y_train
+
+
+def get_test_data(cols, history_date, target_date):
+    testList = []
+    for i in range(81):
+        file_path = './data/test/{0}.csv'.format(i)
+        test_df = pd.read_csv(file_path)
+        test_df = del_zero(test_df)
+
+        data_df = test_df[cols]
+        data = data_df.values
+
+        # data_mean = data.mean(axis=0)
+        # data_std = data.std(axis=0)
+        # data = (data - data_mean) / data_std
+
+        days = 6
+        size_of_day = int(data.shape[0] / days) # 30
+
+        end_idx = data.shape[0] - days * 30
+
+        step = size_of_day
+
+        sub_range = [k * 30 for k in range(history_date)]
+        for i in range(0, end_idx):
+            main_range = [sub + i for sub in sub_range]
+            testList.append(data[main_range])
+
+
+    testData = np.array(testList)
+
+    return testData
+
+# def split_season(data, path):
+#     season_data = pd.to_csv(path)
+#     for s in len(seaon_data):
+#         data.iloc[
+#             : , "season"]
+
+

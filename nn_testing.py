@@ -34,11 +34,10 @@ with open("trying_num.txt", 'r') as f:
 with open("trying_num.txt", "w") as f:
     f.write(trying_num)
 
-trying_num = 42
 # X_Test = get_test(cons, unit)
 
-testData = load_test(days=3,cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"])
-# testData = load_change_test(days=3, select=[1,3], cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"],includeRaw=True)
+# testData = load_test(days=3,cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"])
+testData = load_change_test(days=3, select=[1,3], cols=["DHI", "DNI", "WS", "RH", "T", "TARGET"],includeRaw=True)
 X_Test = np.array(testData.values)
 
 # data_mean = X_Test.mean(axis=0)
